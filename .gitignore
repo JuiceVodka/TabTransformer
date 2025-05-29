@@ -1,0 +1,7 @@
+MT3-pytorch-main/data/datasets/
+MT3-pytorch-main/cpt/
+MT3-pytorch-main/wandb/
+MT3-pytorch-main/mt3-pytorch/
+**/storage/
+**/storage16/
+venv/
