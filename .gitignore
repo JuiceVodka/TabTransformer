@@ -5,3 +5,5 @@ MT3-pytorch-main/mt3-pytorch/
 **/storage/
 **/storage16/
 venv/
+**/train.log
+**/train2.log
