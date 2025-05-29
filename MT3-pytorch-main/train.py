@@ -35,7 +35,8 @@ class MT3Trainer(pl.LightningModule):
         #self.criterion = nn.CrossEntropyLoss(ignore_index=TOKEN_PAD)
         self.criterion = nn.CrossEntropyLoss(ignore_index=TOKEN_PAD_TAB)
         self.cpt_path = data_config.cpt_path
-        self.val_outputs = []
+        #for new lightning
+        #self.val_outputs = []
         os.makedirs(self.cpt_path, exist_ok=True)
 
     def forward(self, encoder_input_tokens, decoder_target_tokens, decode):
@@ -74,14 +75,14 @@ class MT3Trainer(pl.LightningModule):
         targets = targets.cpu().tolist()
 
         #added cause newer pytorch lightning
-        self.val_outputs.append({"preds": preds, "targets": targets})
+        #self.val_outputs.append({"preds": preds, "targets": targets})
 
         return {"loss": loss.cpu().item(), "preds": preds, "targets": targets}
         #return loss
 
-    def on_validation_epoch_end(self):
+    def validation_epoch_end(self, outputs):
         #added fornew lighnign pytorch
-        outputs = self.val_outputs
+        #outputs = self.val_outputs
         # Aggregate all predictions and targets
         all_preds = []
         all_targets = []
@@ -98,7 +99,7 @@ class MT3Trainer(pl.LightningModule):
         self.log("val/f1", avg_f1, prog_bar=True, logger=True)
         
         #added cause newer pytorch liughing
-        self.val_outputs.clear()
+        #self.val_outputs.clear()
     
     def configure_optimizers(self):
         optimizer = AdamW(self.model.parameters(), experiment_config['learning_rate'])
@@ -125,7 +126,7 @@ if __name__ == "__main__":
     dirpath='mt3-pytorch',
     filename='epoch={epoch:04d}',
     save_top_k=-1,  # Save all checkpoints
-    every_n_epochs=100,
+    period=100,#every_n_epochs=100,
     save_weights_only=True
     )
     
@@ -149,14 +150,12 @@ if __name__ == "__main__":
 
     import wandb
 
-    trainer = pl.Trainer(accelerator='gpu',    # ✅ Use accelerator instead of `gpus`
-                         devices=1,
+    trainer = pl.Trainer(gpus=1,
                          logger=wandb_logger,
                          check_val_every_n_epoch=1,
                          max_steps=experiment_config['training_steps'],
                          callbacks=[checkpoint_callback],
                          max_epochs=10000
-                         #limit_train_batches=60,  # or whatever number of batches per epoch you want
                          )
                          #changed check val each epoch to 1 from experiment_config["checking_steps"]
                          #changed gpus=1 to devices=2, added accečeratpr="gpu" and strategy ="ddp"
